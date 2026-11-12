@@ -1,0 +1,27 @@
+# secrets / local config
+.env
+.env.local
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated demo data (synthetic, but large)
+data/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+
+web/

@@ -1,0 +1,1401 @@
+<!doctype html>
+<!-- Source of docs/AcadLedger-System-Guide.pdf. Rebuild with: python3 docs/guide/build.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AcadLedger system guide</title>
+<style>
+  :root {
+    --ink: #15181e;
+    --muted: #5c6470;
+    --line: #dfe3e9;
+    --soft: #f4f6f9;
+    --accent: #1f4fd8;
+    --accent-soft: #eef3ff;
+    --danger: #b42318;
+    --success: #067647;
+    --warning: #b54708;
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --serif: Charter, Georgia, serif;
+    --mono: Menlo, Consolas, monospace;
+  }
+  @page {
+    size: A4;
+    margin: 17mm 18mm 19mm 18mm;
+    @bottom-left { content: "AcadLedger system guide"; font: 8pt "Helvetica Neue", sans-serif; color: #7a828e; }
+    @bottom-right { content: counter(page); font: 8pt "Helvetica Neue", sans-serif; color: #7a828e; }
+  }
+  @page :first {
+    margin: 0;
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+  }
+  * { box-sizing: border-box; }
+  html { font-family: var(--serif); font-size: 10.3pt; line-height: 1.47; color: var(--ink); }
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  section { break-before: page; }
+  p { margin: 0 0 7pt; }
+  h1, h2, h3, table, figcaption, .sans, .eyebrow, .callout h4, .flow, .kv { font-family: var(--sans); }
+  h1 { font-size: 19pt; line-height: 1.2; letter-spacing: -0.2pt; margin: 0 0 10pt; }
+  h1 .num { color: var(--accent); margin-right: 7pt; }
+  h2 { font-size: 11.6pt; margin: 13pt 0 5pt; break-after: avoid; }
+  h3 { font-size: 9.6pt; margin: 9pt 0 3pt; break-after: avoid; }
+  .lead { font-size: 11.2pt; color: #2a2f38; margin-bottom: 10pt; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code { background: var(--soft); padding: 0.5pt 2.5pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 7.9pt; line-height: 1.45; background: var(--soft);
+        border: 0.5pt solid var(--line); border-radius: 4pt; padding: 7pt 9pt; margin: 6pt 0 9pt;
+        white-space: pre-wrap; break-inside: avoid; }
+  ul, ol { margin: 0 0 7pt; padding-left: 15pt; }
+  li { margin-bottom: 2.5pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.5pt; line-height: 1.38; margin: 6pt 0 10pt; break-inside: avoid; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 7.8pt; padding: 4pt 6pt;
+       border-bottom: 0.8pt solid #c9cfd8; }
+  td { padding: 4.5pt 6pt; border-bottom: 0.5pt solid var(--line); vertical-align: top; }
+  td:first-child, th:first-child { padding-left: 0; }
+  td strong { font-weight: 600; }
+  figure { margin: 8pt 0 10pt; break-inside: avoid; }
+  figure img { display: block; width: 100%; border: 0.6pt solid #cfd5dd; border-radius: 4pt; }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 8pt; color: var(--muted); margin-top: 4pt; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .callout { border-left: 2.2pt solid var(--accent); background: var(--accent-soft); padding: 7pt 10pt;
+             margin: 8pt 0 10pt; border-radius: 0 4pt 4pt 0; break-inside: avoid; }
+  .callout h4 { margin: 0 0 2pt; font-size: 8.4pt; color: var(--accent); letter-spacing: 0.2pt; }
+  .callout p { margin: 0; font-size: 9.7pt; }
+  .callout.note { border-color: #9aa3b0; background: var(--soft); }
+  .callout.note h4 { color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14pt; }
+  .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9pt; }
+  .card { border: 0.6pt solid var(--line); border-radius: 5pt; padding: 8pt 10pt; font-family: var(--sans); font-size: 8.6pt; line-height: 1.4; }
+  .card h3 { margin: 0 0 3pt; font-size: 9.4pt; }
+  .card p { margin: 0; color: #343a45; }
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 8pt 0 4pt; font-size: 8pt; line-height: 1.35; }
+  .flow .step { flex: 1; border: 0.6pt solid #c3cbe0; background: var(--accent-soft); border-radius: 4pt; padding: 6pt 7pt; }
+  .flow .step b { display: block; font-size: 8.6pt; color: var(--accent); margin-bottom: 1.5pt; }
+  .flow .arrow { flex: 0 0 13pt; display: flex; align-items: center; justify-content: center; color: #8b94a3; font-size: 10pt; }
+  .flow .step.end { background: #ecfdf3; border-color: #b7e3cb; }
+  .flow .step.end b { color: var(--success); }
+  .flow .step.bad { background: #fef3f2; border-color: #f1c4bf; }
+  .flow .step.bad b { color: var(--danger); }
+  .tag { font-family: var(--mono); font-size: 7.4pt; background: var(--soft); border: 0.5pt solid var(--line); border-radius: 2.5pt; padding: 0.3pt 3pt; white-space: nowrap; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+
+  /* cover */
+  .cover { break-before: auto; height: 297mm; padding: 0; position: relative; overflow: hidden; }
+  .cover .band { background: var(--accent); height: 9mm; }
+  .cover .inner { padding: 30mm 22mm 0; }
+  .cover .eyebrow { font-size: 9.5pt; color: var(--accent); font-weight: 600; letter-spacing: 0.3pt; }
+  .cover h1 { font-size: 40pt; letter-spacing: -1pt; margin: 8mm 0 3mm; }
+  .cover .sub { font-family: var(--sans); font-size: 15pt; line-height: 1.35; color: #2a2f38; max-width: 135mm; }
+  .cover .what { font-size: 11.5pt; max-width: 140mm; margin-top: 9mm; color: #343a45; }
+  .cover figure { margin: 12mm 0 0; }
+  .cover figure img { box-shadow: 0 2mm 8mm rgba(20, 30, 60, 0.12); }
+  .cover .foot { position: absolute; left: 22mm; right: 22mm; bottom: 16mm; font-family: var(--sans); font-size: 8.6pt;
+                 color: var(--muted); border-top: 0.6pt solid var(--line); padding-top: 4mm; display: flex; justify-content: space-between; }
+
+  /* contents */
+  .toc { font-family: var(--sans); font-size: 9.8pt; margin: 4pt 0 12pt; }
+  .toc div { display: flex; align-items: baseline; gap: 6pt; padding: 3.6pt 0; border-bottom: 0.5pt dotted #c9cfd8; }
+  .toc .n { color: var(--accent); font-weight: 600; width: 16pt; }
+  .toc .t { flex: 1; }
+  .toc .p { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  svg text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .box { fill: #fff; stroke: #aab4c6; stroke-width: 1; }
+  .boxa { fill: #eef3ff; stroke: #9fb3ea; stroke-width: 1; }
+  .boxh { fill: #1f4fd8; }
+  .t1 { font-size: 11.5px; font-weight: 600; fill: #15181e; }
+  .t2 { font-size: 9.6px; fill: #5c6470; }
+  .tw { font-size: 10.5px; font-weight: 600; fill: #fff; }
+  .tm { font-size: 9.2px; fill: #2a2f38; font-family: Menlo, monospace; }
+  .lbl { font-size: 8.8px; fill: #5c6470; }
+  .ln { stroke: #7c889c; stroke-width: 1.1; fill: none; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================== cover -->
+<section class="cover">
+  <div class="band"></div>
+  <div class="inner">
+    <div class="eyebrow">SYSTEM GUIDE</div>
+    <h1>AcadLedger</h1>
+    <div class="sub">How an APAAR-linked student records and verification platform works, feature by feature.</div>
+    <p class="what">One verified, deduplicated student record per APAAR ID: from an institute's spreadsheet,
+      through validation and a central repository, to an employer confirming the record from a QR code.</p>
+    <figure><img src="figures/home.png" alt="The AcadLedger home page"></figure>
+  </div>
+  <div class="foot">
+    <span>Based on Smart India Hackathon 2026 problem statement SIH26263 (AICTE). Built as a learning project.</span>
+    <span>November 2026</span>
+  </div>
+</section>
+
+<!-- ===================================================================== contents -->
+<section>
+  <h1>Contents</h1>
+  <div class="toc">
+    <div><span class="n">1</span><span class="t">The problem and the idea</span><span class="p">3</span></div>
+    <div><span class="n">2</span><span class="t">The system at a glance</span><span class="p">4</span></div>
+    <div><span class="n">3</span><span class="t">Following one file through the system</span><span class="p">5</span></div>
+    <div><span class="n">4</span><span class="t">The data model</span><span class="p">6</span></div>
+    <div><span class="n">5</span><span class="t">Accounts, roles and sign-in</span><span class="p">7</span></div>
+    <div><span class="n">6</span><span class="t">Onboarding institutes and approved intake</span><span class="p">8</span></div>
+    <div><span class="n">7</span><span class="t">Uploading a file</span><span class="p">9</span></div>
+    <div><span class="n">8</span><span class="t">The validation pipeline</span><span class="p">10</span></div>
+    <div><span class="n">9</span><span class="t">Committing to the central repository</span><span class="p">12</span></div>
+    <div><span class="n">10</span><span class="t">The APAAR registry adapter</span><span class="p">13</span></div>
+    <div><span class="n">11</span><span class="t">Approved intake and the AICTE dashboard</span><span class="p">14</span></div>
+    <div><span class="n">12</span><span class="t">Verification with the student's consent</span><span class="p">15</span></div>
+    <div><span class="n">13</span><span class="t">The audit trail</span><span class="p">17</span></div>
+    <div><span class="n">14</span><span class="t">Security in one place</span><span class="p">18</span></div>
+    <div><span class="n">15</span><span class="t">Testing and performance</span><span class="p">19</span></div>
+    <div><span class="n">16</span><span class="t">Running it and finding your way around</span><span class="p">20</span></div>
+    <div><span class="n">17</span><span class="t">Limits, next steps and glossary</span><span class="p">21</span></div>
+  </div>
+
+  <h2>How to read this guide</h2>
+  <p>Sections 1 to 4 give the whole picture: what problem the system addresses, which parts it is made of, how
+    a single file travels through them, and what is stored. Sections 5 to 13 take one feature each. Every one
+    of those says what the feature does for its user, how it works underneath, and why it was built that way.
+    Sections 14 to 17 cover security, testing, running the system and its limits.</p>
+  <p>Boxes marked <b class="sans" style="color:var(--accent);font-size:9pt">Why it is built this way</b> explain a
+    design decision. They are the parts most worth reading if you are here to learn, because the decision is
+    usually more reusable than the code.</p>
+
+  <h2>The system in six sentences</h2>
+  <ol>
+    <li>An institute registers, and an AICTE officer approves it and records how many students each of its
+      programmes may admit.</li>
+    <li>The institute uploads its admission list as a spreadsheet, with each student's 12-digit APAAR ID.</li>
+    <li>A background worker checks every row and reports each problem against its row and column.</li>
+    <li>Only a file with no errors can be committed, and the database allows one record per APAAR ID across
+      all institutes.</li>
+    <li>AICTE sees every programme's enrolment against its approved intake, with the ones over it flagged.</li>
+    <li>A student can share a QR code that lets an authorised employer or university confirm their record,
+      and every such lookup is recorded in a tamper-evident log.</li>
+  </ol>
+
+  <div class="callout note">
+    <h4>WHAT IS REAL AND WHAT IS SIMULATED</h4>
+    <p>The software is real and tested end to end. Two things around it are simulated: the APAAR registry is a
+      stand-in (real access needs government credentials), and all student data is generated. The screenshots
+      in this guide come from the running system with generated data.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 1 -->
+<section>
+  <h1><span class="num">1</span>The problem and the idea</h1>
+  <p class="lead">The problem statement asks for an APAAR ID-based student data management and verification
+    platform for AICTE-approved institutions. Behind that title are three concrete gaps.</p>
+
+  <div class="cols3">
+    <div class="card"><h3>AICTE sees totals, not students</h3>
+      <p>Student-level data reaches AICTE only from PGDM institutes. Everyone else reports headcounts, so
+        there is no record to check a claim against.</p></div>
+    <div class="card"><h3>The same student can be counted twice</h3>
+      <p>Without a shared identifier, one person can sit on two institutes' rolls and nobody can tell.
+        Individual records cannot be verified either.</p></div>
+    <div class="card"><h3>Over-enrolment goes unnoticed</h3>
+      <p>Each programme has an intake AICTE approved. Without per-student data, admitting more than that is
+        invisible to the regulator.</p></div>
+  </div>
+
+  <h2>The idea</h2>
+  <p>APAAR (Automated Permanent Academic Account Registry) gives every student one 12-digit ID that stays the
+    same wherever they study. If every institute reports its students by APAAR ID, all three gaps close with
+    one rule: <b>the central repository holds exactly one record per APAAR ID.</b> A student-level record
+    exists, so it can be verified. A second record for the same ID cannot be created, so nobody is counted
+    twice. And counting records per programme gives real enrolment to compare with the approved intake.</p>
+  <p>The rest of the system exists to make that rule practical: getting messy spreadsheets in without letting
+    bad rows through, telling institutes exactly what to fix, and letting outsiders check a record without
+    exposing everyone's data.</p>
+
+  <table>
+    <tr><th style="width:27%">Gap</th><th style="width:40%">What the system does</th><th>Where to read about it</th></tr>
+    <tr><td>Totals, not students</td><td>Institutes upload one row per student; rows are validated and stored
+      individually</td><td>Sections 7 to 9</td></tr>
+    <tr><td>Double counting</td><td>A unique constraint on the APAAR ID, checked at validation and again at
+      commit</td><td>Sections 8 and 9</td></tr>
+    <tr><td>Unverifiable records</td><td>Consent-based verification by QR code, with a minimal record returned
+      </td><td>Section 12</td></tr>
+    <tr><td>Unnoticed over-enrolment</td><td>A dashboard comparing enrolment with approved intake for every
+      programme</td><td>Section 11</td></tr>
+    <tr><td>Trust in the data itself</td><td>An append-only, hash-chained audit log of every significant action
+      </td><td>Section 13</td></tr>
+  </table>
+
+  <h2>Who uses it</h2>
+  <table>
+    <tr><th style="width:27%">Role</th><th>What they do</th><th style="width:30%">What they can see</th></tr>
+    <tr><td><strong>Institute admin</strong><br><span class="muted">data-entry staff</span></td>
+      <td>Uploads admission lists, fixes failed rows, commits valid files, issues verification links for
+        students who ask</td><td>Only their own institute's uploads and students</td></tr>
+    <tr><td><strong>AICTE officer</strong><br><span class="muted">Regulation Bureau</span></td>
+      <td>Approves or suspends institutes, records programmes and approved intake, authorises verifiers,
+        watches the dashboard, inspects the audit log</td><td>Everything, across all institutes</td></tr>
+    <tr><td><strong>Verifier</strong><br><span class="muted">employer, university</span></td>
+      <td>Confirms one student's enrolment from a link that student shared</td>
+      <td>One minimal record per link; nothing they can browse or search</td></tr>
+  </table>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p>Students are not users of the system. They never sign in. That keeps the account model small, and it
+      is why consent for verification is carried by a link the institute issues at the student's request
+      rather than by a student login. Section 12 explains the trade-off.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 2 -->
+<section>
+  <h1><span class="num">2</span>The system at a glance</h1>
+  <p class="lead">Six running parts, each with one job. The browser talks only to the web app; the web app
+    forwards data requests to the API; slow work is handed to a background worker.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 268" role="img" aria-label="Architecture diagram">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0L10 5L0 10z" fill="#7c889c"/></marker></defs>
+      <rect class="box" x="8" y="95" width="112" height="64" rx="6"/>
+      <text class="t1" x="64" y="122" text-anchor="middle">Browser</text>
+      <text class="t2" x="64" y="138" text-anchor="middle">the three kinds of user</text>
+
+      <rect class="boxa" x="166" y="95" width="140" height="64" rx="6"/>
+      <text class="t1" x="236" y="122" text-anchor="middle">Next.js web app</text>
+      <text class="t2" x="236" y="138" text-anchor="middle">pages + /api proxy</text>
+
+      <rect class="boxa" x="352" y="95" width="140" height="64" rx="6"/>
+      <text class="t1" x="422" y="122" text-anchor="middle">FastAPI service</text>
+      <text class="t2" x="422" y="138" text-anchor="middle">rules and access control</text>
+
+      <rect class="box" x="546" y="12" width="140" height="58" rx="6"/>
+      <text class="t1" x="616" y="37" text-anchor="middle">PostgreSQL</text>
+      <text class="t2" x="616" y="53" text-anchor="middle">records, audit log</text>
+
+      <rect class="box" x="546" y="98" width="140" height="58" rx="6"/>
+      <text class="t1" x="616" y="123" text-anchor="middle">MinIO</text>
+      <text class="t2" x="616" y="139" text-anchor="middle">uploaded files</text>
+
+      <rect class="box" x="352" y="200" width="140" height="54" rx="6"/>
+      <text class="t1" x="422" y="224" text-anchor="middle">Redis</text>
+      <text class="t2" x="422" y="240" text-anchor="middle">job queue</text>
+
+      <rect class="boxa" x="546" y="198" width="140" height="58" rx="6"/>
+      <text class="t1" x="616" y="223" text-anchor="middle">Celery worker</text>
+      <text class="t2" x="616" y="239" text-anchor="middle">validation pipeline</text>
+
+      <path class="ln" d="M120 127H164" marker-end="url(#ah)"/>
+      <path class="ln" d="M306 127H350" marker-end="url(#ah)"/>
+      <text class="lbl" x="328" y="120" text-anchor="middle">/api/v1</text>
+      <path class="ln" d="M492 112L544 52" marker-end="url(#ah)"/>
+      <path class="ln" d="M492 127H544" marker-end="url(#ah)"/>
+      <path class="ln" d="M422 159V198" marker-end="url(#ah)"/>
+      <text class="lbl" x="428" y="183">queue a job</text>
+      <path class="ln" d="M492 227H544" marker-end="url(#ah)"/>
+      <text class="lbl" x="518" y="220" text-anchor="middle">take it</text>
+      <path class="ln" d="M616 198V158" marker-end="url(#ah)"/>
+      <text class="lbl" x="622" y="182">read file</text>
+      <path class="ln" d="M686 227H696V41H688" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption><b>Figure 1.</b> The running parts. Shaded boxes are code written for this project; white
+      boxes are off-the-shelf services. The worker writes its results to PostgreSQL (line on the right).</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:21%">Part</th><th style="width:22%">Technology</th><th>What it is responsible for</th></tr>
+    <tr><td><strong>Web app</strong></td><td>Next.js 16, React 19, TypeScript, Tailwind CSS</td>
+      <td>Every screen. It holds no business rules: it asks the API and shows the answer. It also forwards
+        <code>/api/*</code> to the API, so the browser only ever talks to one address.</td></tr>
+    <tr><td><strong>API</strong></td><td>FastAPI, SQLAlchemy 2, Pydantic</td>
+      <td>All rules: who may do what, what a valid request looks like, what gets written. If the web app
+        were replaced by a script, the rules would still hold.</td></tr>
+    <tr><td><strong>Worker</strong></td><td>Celery</td>
+      <td>Runs the validation pipeline, the one job too slow for a web request (a large file takes seconds
+        to minutes).</td></tr>
+    <tr><td><strong>Queue</strong></td><td>Redis 7</td>
+      <td>Holds "validate upload X" messages between the API and the worker.</td></tr>
+    <tr><td><strong>Database</strong></td><td>PostgreSQL 17</td>
+      <td>Everything durable: accounts, institutes, students, staging rows, the audit log. Several guarantees
+        live here as constraints and triggers, not in application code.</td></tr>
+    <tr><td><strong>Object store</strong></td><td>MinIO (S3-compatible)</td>
+      <td>The uploaded files exactly as received.</td></tr>
+  </table>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Rules live as close to the data as possible.</b> "One record per APAAR ID" is a database constraint,
+      so it holds even if a bug, a script or two simultaneous requests bypass the check in the code. The
+      API repeats the check only to give a friendly message. The same thinking puts the audit log's
+      append-only rule in database triggers.</p>
+  </div>
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>One address for the browser.</b> Because the web app proxies the API, the session cookie is
+      same-origin. That avoids cross-origin configuration entirely and lets the cookie use the strictest
+      settings a browser offers.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 3 -->
+<section>
+  <h1><span class="num">3</span>Following one file through the system</h1>
+  <p class="lead">The quickest way to understand the parts is to follow a single admission list from the
+    moment an institute admin clicks <i>Upload and validate</i> to the moment its students are in the
+    repository.</p>
+
+  <ol>
+    <li><b>The browser posts the file</b> to the web app, which forwards it to the API. The API checks the
+      caller is an institute admin of an <i>active</i> institute, that the file is a <code>.csv</code> or
+      <code>.xlsx</code>, and that it is under 25 MB.</li>
+    <li><b>The API stores the file</b> in the object store under a key built only from IDs
+      (<code>uploads/&lt;institute&gt;/&lt;upload&gt;.csv</code>), records an <code>uploads</code> row with
+      status <span class="tag">queued</span> and the file's SHA-256 hash, writes an audit entry, and puts a
+      message on the queue. It answers immediately with "202 Accepted".</li>
+    <li><b>The browser moves to the upload's page</b> and asks the API for its status once a second.</li>
+    <li><b>The worker picks up the message</b>, marks the upload <span class="tag">validating</span>, reads
+      the file back from the object store and parses it into rows of plain text.</li>
+    <li><b>The five validation stages run</b> over all rows (section 8). Every row, valid or not, is written
+      to the <code>upload_rows</code> staging table together with its list of errors. The upload becomes
+      <span class="tag">validated</span> with counts of valid and invalid rows.</li>
+    <li><b>The page shows the result.</b> If any row has an error, nothing can be committed: the admin
+      downloads the error report, fixes the spreadsheet and uploads it again as a new upload.</li>
+    <li><b>The admin commits a clean upload.</b> In one database transaction the API re-checks for
+      duplicates, copies the staging rows into <code>students</code>, deletes the staging rows, refreshes
+      the dashboard's summary and writes an audit entry (section 9). The upload is now
+      <span class="tag">committed</span>.</li>
+  </ol>
+
+  <div class="flow">
+    <div class="step"><b>queued</b>stored, waiting for a worker</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>validating</b>stages running</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>validated</b>results ready; may have errors</div><div class="arrow">&rarr;</div>
+    <div class="step end"><b>committed</b>students in the repository</div>
+  </div>
+  <div class="flow" style="margin-top:3pt">
+    <div style="flex:1.18"></div>
+    <div class="step bad" style="flex:1"><b>failed</b>the file as a whole is unreadable: wrong columns, not UTF-8, corrupt Excel</div>
+    <div style="flex:2.3"></div>
+  </div>
+  <p class="sans small muted" style="margin-top:4pt"><b style="color:var(--ink)">Figure 2.</b> The life of an
+    upload. <span class="tag">failed</span> is reached from <span class="tag">validating</span> and always
+    carries a reason the uploader can act on.</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Validation runs in the background</b> because its duration depends on the file. A web request that
+      takes two minutes would time out and leave the user staring at a spinner with no way to come back.
+      With a queue, the upload request returns at once, the page can be closed and reopened, and if a worker
+      dies mid-file the message is redelivered and the upload is validated again from the start.</p>
+  </div>
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Staging is separate from the repository.</b> Rows land in <code>upload_rows</code> first and only
+      move to <code>students</code> on commit. The repository therefore never contains half a file or a
+      row that failed a check, and an institute can look at exactly what would be saved before saving it.</p>
+  </div>
+  <div class="callout note">
+    <h4>TWO KINDS OF ERROR</h4>
+    <p>A problem with the <i>file</i> (a missing column, an unreadable workbook) fails the whole upload with
+      one message. A problem with a <i>row</i> (a bad date, a duplicate ID) never fails the upload: it is
+      recorded against that row so the report can list every problem in one pass.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 4 -->
+<section>
+  <h1><span class="num">4</span>The data model</h1>
+  <p class="lead">Nine tables and one summary view. The shape of the data carries most of the system's
+    guarantees, so it is worth knowing before the features.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 348" role="img" aria-label="Entity relationship diagram">
+      <!-- row 1 -->
+      <g><rect class="box" x="20" y="14" width="160" height="84" rx="5"/><rect class="boxh" x="20" y="14" width="160" height="21" rx="5"/><rect class="boxh" x="20" y="25" width="160" height="10"/>
+        <text class="tw" x="30" y="29">institutes</text>
+        <text class="tm" x="30" y="51">aicte_id  (unique)</text><text class="tm" x="30" y="65">name, state</text><text class="tm" x="30" y="79">status</text></g>
+      <g><rect class="box" x="270" y="14" width="160" height="84" rx="5"/><rect class="boxh" x="270" y="14" width="160" height="21" rx="5"/><rect class="boxh" x="270" y="25" width="160" height="10"/>
+        <text class="tw" x="280" y="29">programmes</text>
+        <text class="tm" x="280" y="51">institute_id</text><text class="tm" x="280" y="65">code  (unique per inst.)</text><text class="tm" x="280" y="79">name, level</text></g>
+      <g><rect class="box" x="520" y="14" width="160" height="84" rx="5"/><rect class="boxh" x="520" y="14" width="160" height="21" rx="5"/><rect class="boxh" x="520" y="25" width="160" height="10"/>
+        <text class="tw" x="530" y="29">programme_intakes</text>
+        <text class="tm" x="530" y="51">programme_id</text><text class="tm" x="530" y="65">academic_year</text><text class="tm" x="530" y="79">approved_intake</text></g>
+      <!-- row 2 -->
+      <g><rect class="box" x="20" y="132" width="160" height="84" rx="5"/><rect class="boxh" x="20" y="132" width="160" height="21" rx="5"/><rect class="boxh" x="20" y="143" width="160" height="10"/>
+        <text class="tw" x="30" y="147">users</text>
+        <text class="tm" x="30" y="169">email  (unique)</text><text class="tm" x="30" y="183">password_hash, role</text><text class="tm" x="30" y="197">institute_id  (admins only)</text></g>
+      <g><rect class="boxa" x="270" y="132" width="160" height="84" rx="5"/><rect class="boxh" x="270" y="132" width="160" height="21" rx="5"/><rect class="boxh" x="270" y="143" width="160" height="10"/>
+        <text class="tw" x="280" y="147">students</text>
+        <text class="tm" x="280" y="169">apaar_id  (UNIQUE)</text><text class="tm" x="280" y="183">institute_id, programme_id</text><text class="tm" x="280" y="197">name, dob, enrolment_no</text></g>
+      <g><rect class="box" x="520" y="132" width="160" height="84" rx="5"/><rect class="boxh" x="520" y="132" width="160" height="21" rx="5"/><rect class="boxh" x="520" y="143" width="160" height="10"/>
+        <text class="tw" x="530" y="147">verification_grants</text>
+        <text class="tm" x="530" y="169">student_id</text><text class="tm" x="530" y="183">token_hash  (unique)</text><text class="tm" x="530" y="197">expires_at, revoked_at</text></g>
+      <!-- row 3 -->
+      <g><rect class="box" x="20" y="250" width="160" height="84" rx="5"/><rect class="boxh" x="20" y="250" width="160" height="21" rx="5"/><rect class="boxh" x="20" y="261" width="160" height="10"/>
+        <text class="tw" x="30" y="265">audit_log</text>
+        <text class="tm" x="30" y="287">action, actor, entity</text><text class="tm" x="30" y="301">payload</text><text class="tm" x="30" y="315">prev_hash, hash</text></g>
+      <g><rect class="box" x="270" y="250" width="160" height="84" rx="5"/><rect class="boxh" x="270" y="250" width="160" height="21" rx="5"/><rect class="boxh" x="270" y="261" width="160" height="10"/>
+        <text class="tw" x="280" y="265">uploads</text>
+        <text class="tm" x="280" y="287">institute_id, academic_year</text><text class="tm" x="280" y="301">status, row counts</text><text class="tm" x="280" y="315">file_sha256, summary</text></g>
+      <g><rect class="box" x="520" y="250" width="160" height="84" rx="5"/><rect class="boxh" x="520" y="250" width="160" height="21" rx="5"/><rect class="boxh" x="520" y="261" width="160" height="10"/>
+        <text class="tw" x="530" y="265">upload_rows  (staging)</text>
+        <text class="tm" x="530" y="287">upload_id, row_number</text><text class="tm" x="530" y="301">data  (the row)</text><text class="tm" x="530" y="315">is_valid, errors</text></g>
+      <!-- relations -->
+      <path class="ln" d="M180 56H270"/><text class="lbl" x="225" y="50" text-anchor="middle">has many</text>
+      <path class="ln" d="M430 56H520"/><text class="lbl" x="475" y="50" text-anchor="middle">one per year</text>
+      <path class="ln" d="M100 98V132"/><text class="lbl" x="106" y="119">has admins</text>
+      <path class="ln" d="M350 98V132"/><text class="lbl" x="356" y="119">enrols</text>
+      <path class="ln" d="M430 174H520"/><text class="lbl" x="475" y="168" text-anchor="middle">may be shared via</text>
+      <path class="ln" d="M350 250V216"/><text class="lbl" x="356" y="237">source of</text>
+      <path class="ln" d="M430 292H520"/><text class="lbl" x="475" y="286" text-anchor="middle">has rows</text>
+      <path class="ln" d="M180 82H226V174H270"/><path class="ln" d="M226 174V292H270"/>
+      <text class="lbl" x="231" y="240">owns</text>
+    </svg>
+    <figcaption><b>Figure 3.</b> The tables and how they relate. <code>students</code> is the central
+      repository. <code>audit_log</code> stands apart on purpose: it refers to the others but nothing
+      depends on it.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:24%">Table</th><th>What one row means</th><th style="width:36%">Rules the database enforces</th></tr>
+    <tr><td><code>institutes</code></td><td>One AICTE-approved institution</td>
+      <td>Unique AICTE ID; status is one of pending, active, suspended, rejected</td></tr>
+    <tr><td><code>users</code></td><td>One person who can sign in</td>
+      <td>Unique email; an institute admin must belong to an institute, and nobody else may</td></tr>
+    <tr><td><code>programmes</code>,<br><code>programme_intakes</code></td>
+      <td>A course an institute offers, and how many students AICTE approved for it in one academic year</td>
+      <td>Programme code unique within an institute; one intake per programme and year; intake not negative</td></tr>
+    <tr><td><code>uploads</code>,<br><code>upload_rows</code></td>
+      <td>One submitted file, and one spreadsheet row of it with its validation result</td>
+      <td>Rows are deleted with their upload; status is one of five known values</td></tr>
+    <tr><td><code>students</code></td><td>One student, admitted to one programme in one academic year</td>
+      <td><b>APAAR ID unique across the whole table</b> and exactly 12 digits; enrolment number unique
+        within an institute</td></tr>
+    <tr><td><code>verification_grants</code></td><td>One shareable link for one student</td>
+      <td>Unique token hash</td></tr>
+    <tr><td><code>audit_log</code></td><td>One thing that happened</td>
+      <td>Unique hash; triggers reject UPDATE, DELETE and TRUNCATE</td></tr>
+  </table>
+
+  <p>The summary view, <code>programme_enrolment</code>, is derived from these tables: for each programme and
+    year with an approved intake, it stores the number of students enrolled. Section 11 covers it.</p>
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Staging rows are stored as JSON, students as proper columns.</b> A staging row may be nonsense (that
+      is why it is in staging), so it is kept as the text the institute sent, plus a list of errors. A
+      student row has passed every check, so it gets typed columns and constraints. Changes to the schema
+      are written as Alembic migrations, which are applied automatically when the API container starts.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 5 -->
+<section>
+  <h1><span class="num">5</span>Accounts, roles and sign-in</h1>
+  <p class="lead">Three roles, one sign-in form, and a rule checked on every request: you get what your role
+    allows, and only for your own institute.</p>
+
+  <h2>How signing in works</h2>
+  <ol>
+    <li>The user submits email and password. The API looks the account up and compares the password with the
+      stored <b>Argon2</b> hash. The password itself is never stored.</li>
+    <li>On success the API creates a signed token (a JWT) containing the user's ID and an expiry eight hours
+      away, and sends it to the browser as a cookie.</li>
+    <li>The browser returns the cookie with every later request. The API verifies the signature, loads the
+      user, and refuses the request if the account has been deactivated since.</li>
+  </ol>
+  <p>The cookie is marked <code>HttpOnly</code>, so scripts on the page cannot read it, and
+    <code>SameSite=Lax</code>, so the browser will not attach it to a form submitted from another site.
+    Programs that are not browsers can send the same token in an <code>Authorization: Bearer</code> header.</p>
+
+  <h2>What each role may do</h2>
+  <table>
+    <tr><th style="width:44%">Action</th><th>Institute admin</th><th>AICTE officer</th><th>Verifier</th></tr>
+    <tr><td>Register an institute</td><td colspan="3">Anyone (public form); the institute starts as <i>pending</i></td></tr>
+    <tr><td>Approve, suspend or reject institutes</td><td>&ndash;</td><td>Yes</td><td>&ndash;</td></tr>
+    <tr><td>Create programmes, set approved intake</td><td>Read own only</td><td>Yes</td><td>&ndash;</td></tr>
+    <tr><td>Upload files and commit them</td><td>Yes, if institute is active</td><td>&ndash;</td><td>&ndash;</td></tr>
+    <tr><td>See uploads and students</td><td>Own institute only</td><td>All</td><td>&ndash;</td></tr>
+    <tr><td>Issue and revoke verification links</td><td>Own students only</td><td>&ndash;</td><td>&ndash;</td></tr>
+    <tr><td>Verify a student from a link</td><td>&ndash;</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Dashboard, audit log, manage verifiers</td><td>&ndash;</td><td>Yes</td><td>&ndash;</td></tr>
+  </table>
+  <p>Each API endpoint declares the roles it accepts, and the check runs before any of the endpoint's code.
+    Data is scoped a second time inside the endpoint: an institute admin asking for another institute's
+    upload receives "404 Not Found", the same answer as for an upload that does not exist, so the reply
+    does not even confirm that the other upload is there.</p>
+
+  <h2>Protections around sign-in</h2>
+  <table>
+    <tr><th style="width:27%">Protection</th><th>How it behaves</th></tr>
+    <tr><td><strong>Lockout</strong></td><td>Five wrong passwords in a row lock the account for 15 minutes.
+      A correct sign-in resets the count. The lock is recorded in the audit log.</td></tr>
+    <tr><td><strong>Same answer either way</strong></td><td>A wrong password and an unknown email return the
+      identical message, and the API does the same hashing work for both, so neither the text nor the
+      response time reveals which emails have accounts.</td></tr>
+    <tr><td><strong>Change password</strong></td><td>Any user can replace their password from the Account page
+      (their email in the header). This matters for verifiers, whose first password is chosen by an officer.</td></tr>
+    <tr><td><strong>Clean session boundaries</strong></td><td>Signing in and out are full page loads. The web
+      framework keeps recently visited pages alive in memory for speed; a page load guarantees that nothing
+      from one person's session is still there for the next.</td></tr>
+    <tr><td><strong>Signing secret check</strong></td><td>The API refuses to start if the secret used to sign
+      tokens is shorter than 32 characters, so a placeholder value can never reach a running system.</td></tr>
+  </table>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>A signed token instead of a server-side session table.</b> The API can check a token without a
+      database lookup for the session, and there is nothing to clean up. The cost is that a token cannot be
+      cancelled before it expires, which is why the API still loads the user on each request and checks the
+      account is active. For a small deployment that is a reasonable balance.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 6 -->
+<section>
+  <h1><span class="num">6</span>Onboarding institutes and approved intake</h1>
+  <p class="lead">Nothing can be uploaded until AICTE has said who the institute is and how many students
+    each of its programmes may admit. This is the reference data every later check depends on.</p>
+
+  <h2>From registration to active</h2>
+  <div class="flow">
+    <div class="step"><b>Register</b>Public form: institute name, AICTE ID, state, and the first admin's
+      name, email and password</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>pending</b>The admin can sign in and sees a notice, but the upload form is not
+      shown and the API refuses uploads</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>Officer reviews</b>Approve or reject from the Institutes page</div><div class="arrow">&rarr;</div>
+    <div class="step end"><b>active</b>Uploads enabled. An officer can later suspend and reactivate</div>
+  </div>
+  <p style="margin-top:7pt">Registration creates the institute and its first admin together, in one
+    transaction, so there is never an institute nobody can sign in to. The AICTE ID and the email must both
+    be unused. Every status change is written to the audit log with the old and new status and the officer
+    who made it.</p>
+
+  <h2>Programmes and approved intake</h2>
+  <p>An officer opens an institute and records its programmes: a short code such as <code>CSE</code>, a
+    name, and a level (diploma, undergraduate or postgraduate). For each programme and academic year the
+    officer then enters the <b>approved intake</b>, the number of students AICTE has sanctioned. Academic
+    years are written like <code>2026-27</code> and the format is checked.</p>
+
+  <figure>
+    <img src="figures/institute.png" alt="An institute's programmes and approved intake">
+    <figcaption><b>Figure 4.</b> An officer's view of one institute. Each intake is saved on its own, and
+      each save is an audit entry recording the previous and the new number.</figcaption>
+  </figure>
+
+  <p>These two pieces of reference data are what the last validation stage checks against:</p>
+  <ul>
+    <li>A row naming a programme the institute does not have is rejected with the list of codes it does have.</li>
+    <li>A row for a programme with no approved intake <i>for that year</i> is rejected. An institute cannot
+      enrol students into a year AICTE has not approved.</li>
+    <li>A programme that ends up with more students than its intake is <i>not</i> rejected, but flagged
+      (section 11).</li>
+  </ul>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Institutes cannot edit their own programmes or intake.</b> If they could, the intake check would be
+      meaningless: an institute over its limit would simply raise the limit. The numbers belong to the
+      regulator, so only an officer can change them, and the institute sees them read-only. In a real
+      deployment this data would be imported from AICTE's approval system rather than typed in.</p>
+  </div>
+  <div class="callout note">
+    <h4>INTAKE IS PER YEAR</h4>
+    <p>A student record carries the academic year of admission, taken from the upload. Enrolment for 2026-27
+      is counted only against the 2026-27 intake, so each year is judged on its own approval.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 7 -->
+<section>
+  <h1><span class="num">7</span>Uploading a file</h1>
+  <p class="lead">Institutes already keep admission lists in spreadsheets, so the system takes spreadsheets:
+    CSV or Excel, one row per newly admitted student, six columns.</p>
+
+  <figure>
+    <img src="figures/uploads.png" alt="The uploads page for an institute admin">
+    <figcaption><b>Figure 5.</b> The institute admin's Uploads page: the upload form, a link to the template,
+      and every file submitted so far with its result.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:21%">Column</th><th>What is accepted</th><th style="width:33%">What is stored</th></tr>
+    <tr><td><code>apaar_id</code></td><td>12 digits. Spaces and hyphens are ignored, so
+      <code>1234 5678 9012</code> is fine</td><td>The 12 digits</td></tr>
+    <tr><td><code>full_name</code></td><td>Up to 200 characters</td><td>With extra spaces removed</td></tr>
+    <tr><td><code>date_of_birth</code></td><td><code>YYYY-MM-DD</code>, <code>DD-MM-YYYY</code> or
+      <code>DD/MM/YYYY</code>; must give an age of 14 to 100</td><td>A real date</td></tr>
+    <tr><td><code>gender</code></td><td>male, female, other (or m, f, o), any capitalisation</td>
+      <td>male, female or other</td></tr>
+    <tr><td><code>programme_code</code></td><td>One of the institute's programmes, any capitalisation</td>
+      <td>Upper case</td></tr>
+    <tr><td><code>enrolment_no</code></td><td>The institute's own number, up to 40 characters, unique within
+      the institute</td><td>As given</td></tr>
+  </table>
+
+  <h2>Being forgiving about the file, strict about the data</h2>
+  <p>Real spreadsheets are messy in predictable ways, and each of these would otherwise produce a confusing
+    failure:</p>
+  <ul>
+    <li><b>Headers are matched loosely.</b> <code>APAAR ID</code>, <code>Student Name</code>, <code>DOB</code>
+      and <code>Enrollment No</code> are recognised. Extra columns are ignored.</li>
+    <li><b>Excel turns IDs into numbers.</b> A typed-in APAAR ID arrives from Excel as
+      <code>123456789012.0</code>; the parser turns it back into digits. Date cells become proper dates.</li>
+    <li><b>Row numbers match the spreadsheet.</b> The header is row 1, so "row 37" in the error report is row
+      37 on the admin's screen. Blank rows are skipped without shifting the numbering.</li>
+    <li><b>Short rows are padded</b> and reported as missing values, rather than crashing the parser.</li>
+  </ul>
+  <p>What is <i>not</i> forgiven is the data itself. A date that does not exist or an ID with 11 digits is an
+    error on that row, and the row stops the whole file from being committed.</p>
+
+  <h2>Limits and file handling</h2>
+  <div class="cols">
+    <ul>
+      <li>At most 25 MB and 200,000 rows per file.</li>
+      <li>Only <code>.csv</code> and <code>.xlsx</code>. A CSV must be UTF-8; if it is not, the message says
+        how to save it correctly from Excel.</li>
+    </ul>
+    <ul>
+      <li>The file's SHA-256 hash is recorded on the upload and in the audit log, tying each commit to the
+        exact bytes received.</li>
+      <li>The uploader's filename is kept for display only and never becomes part of a storage path.</li>
+    </ul>
+  </div>
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>A downloadable template and precise messages do more than clever guessing.</b> The parser accepts
+      the common variations, but when something is ambiguous (is 03/04/2007 March or April?) it picks one
+      documented reading, day first, and says so in the error text instead of silently guessing per row.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 8 -->
+<section>
+  <h1><span class="num">8</span>The validation pipeline</h1>
+  <p class="lead">The core of the system: five stages, run in order over every row. A row that fails one
+    stage still goes through the others, so a single upload reports everything that is wrong with it.</p>
+
+  <div class="flow">
+    <div class="step"><b>1 schema</b>Required values, lengths, dates, gender</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>2 apaar_format</b>Exactly 12 digits</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>3 apaar_registry</b>Is the ID registered with APAAR?</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>4 duplicates</b>Within the file and against the repository</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>5 intake</b>Known programme, approved for this year</div>
+  </div>
+  <p class="sans small muted" style="margin-top:4pt"><b style="color:var(--ink)">Figure 6.</b> The stages. A
+    later stage only skips a field that an earlier stage has already rejected: there is no point asking the
+    registry about an ID that is not 12 digits.</p>
+
+  <table>
+    <tr><th style="width:15%">Stage</th><th style="width:37%">What it checks</th><th>Error codes it can raise</th></tr>
+    <tr><td><strong>schema</strong></td><td>Every column has a value and fits its length; the date is real and
+      gives a plausible age; gender is a known value. Values are normalised here.</td>
+      <td><span class="tag">REQUIRED</span> <span class="tag">TOO_LONG</span> <span class="tag">INVALID_DATE</span>
+        <span class="tag">DOB_OUT_OF_RANGE</span> <span class="tag">INVALID_GENDER</span></td></tr>
+    <tr><td><strong>apaar_format</strong></td><td>The ID is exactly 12 digits</td>
+      <td><span class="tag">INVALID_APAAR_FORMAT</span></td></tr>
+    <tr><td><strong>apaar_registry</strong></td><td>The registry knows the ID (one call for all IDs in the
+      file; see section 10)</td><td><span class="tag">APAAR_NOT_FOUND</span></td></tr>
+    <tr><td><strong>duplicates</strong></td><td>No ID or enrolment number appears twice in the file; no ID is
+      already in the repository, at this institute or any other; no enrolment number is already used at
+      this institute</td>
+      <td><span class="tag">DUPLICATE_APAAR_IN_FILE</span> <span class="tag">DUPLICATE_ENROLMENT_IN_FILE</span>
+        <span class="tag">APAAR_ALREADY_ENROLLED</span> <span class="tag">APAAR_AT_ANOTHER_INSTITUTE</span>
+        <span class="tag">ENROLMENT_NO_EXISTS</span></td></tr>
+    <tr><td><strong>intake</strong></td><td>The programme code belongs to the institute and has an approved
+      intake for the upload's academic year. Also counts valid rows per programme against the intake.</td>
+      <td><span class="tag">UNKNOWN_PROGRAMME</span> <span class="tag">NO_APPROVED_INTAKE</span></td></tr>
+  </table>
+
+  <h2>Decisions inside the stages</h2>
+  <ul>
+    <li><b>Both copies of a duplicate are flagged.</b> If rows 46 and 47 carry the same APAAR ID, the system
+      cannot know which is the typing mistake, so each is reported with a pointer to the other.</li>
+    <li><b>A cross-institute duplicate does not say where.</b> The message is "already enrolled at another
+      institute". Which institute is information for AICTE, not for a competing institute.</li>
+    <li><b>Exceeding the intake is a finding, not an error.</b> The stage records, per programme, the approved
+      intake, the students already enrolled, the valid rows in this file and the excess. The rows stay valid.</li>
+    <li><b>Messages are written for the person fixing the spreadsheet.</b> They name the column, say what
+      was expected, and for an unknown programme list the codes the institute does have.</li>
+  </ul>
+
+  <h2>Why it stays fast</h2>
+  <p>The naive version of the duplicate check asks the database one question per row: 10,000 rows, 10,000
+    queries. This pipeline asks one question per <i>check</i>. All the file's APAAR IDs are sent to the
+    database as a single array and the matching students come back in one result:</p>
+  <pre>SELECT apaar_id, institute_id FROM students WHERE apaar_id = ANY(:all_ids_in_the_file)</pre>
+  <p>In-file duplicates are found in memory with a dictionary. Results are written to the staging table with
+    PostgreSQL's bulk <code>COPY</code> rather than row-by-row inserts. Together these keep the work
+    proportional to the file size with a small constant: about 7 seconds for 10,000 rows on a laptop
+    (section 15 has the measurements).</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Report everything in one pass.</b> A validator that stops at the first error turns one upload into
+      a dozen: fix the date, upload, discover the bad ID, fix, upload again. Letting every row run through
+      every stage means the first report is the complete to-do list. That is also why stages are separate
+      functions over the whole file rather than one function per row.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 8b -->
+<section>
+  <h1><span class="num">8</span>The validation pipeline <span class="muted" style="font-weight:400;font-size:13pt">(reading the results)</span></h1>
+  <p class="lead">Validation is only useful if the person at the institute can act on it. The upload's page
+    is built around one question: which cells do I need to change?</p>
+
+  <figure>
+    <img src="figures/upload-errors.png" alt="The row-level error list for an upload">
+    <figcaption><b>Figure 7.</b> The lower half of an upload's page, for a 140-row file with 8 deliberately
+      broken rows. Above it (not shown) are the counts: 140 rows, 132 valid, 8 with errors, and the notice
+      "Nothing has been saved". Row 46 shows two problems on one row.</figcaption>
+  </figure>
+
+  <h2>What the page gives the admin</h2>
+  <ul>
+    <li><b>Counts first:</b> rows in the file, valid, with errors. A file with zero errors gets a commit
+      button instead of an error list.</li>
+    <li><b>Error codes as chips,</b> most frequent first. Forty rows with <span class="tag">INVALID_DATE</span>
+      usually means one wrong column format, not forty separate mistakes.</li>
+    <li><b>One line per problem:</b> the spreadsheet row, the column, the value as it appeared in the file,
+      and a sentence saying what is wrong. The list is paged, 50 rows at a time, so a file with tens of
+      thousands of bad rows still opens instantly.</li>
+    <li><b>A downloadable error report</b> in CSV with the same information, for working through in Excel
+      next to the original file.</li>
+  </ul>
+
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:6pt">What the report looks like</h2>
+      <pre>row_number,field,value,code,message,stage
+6,apaar_id,744033013,INVALID_APAAR_FORMAT,
+  apaar_id must be exactly 12 digits,apaar_format
+41,date_of_birth,31/02/2007,INVALID_DATE,
+  date_of_birth must be YYYY-MM-DD or
+  DD-MM-YYYY,schema</pre>
+    </div>
+    <div>
+      <h2 style="margin-top:6pt">Fixing and trying again</h2>
+      <p>There is no editing in the browser. The admin corrects the spreadsheet and uploads the whole file
+        again as a new upload. The old one stays in the list as a record of what was submitted. Because
+        nothing from a file with errors is ever saved, the second upload does not clash with the first.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>The spreadsheet stays the source of truth.</b> If rows could be patched in the browser, the
+      institute's own file would no longer match what AICTE holds, and the next export from their system
+      would reintroduce the same mistakes. Sending people back to the spreadsheet is slightly less
+      convenient and keeps the two in step.</p>
+  </div>
+  <div class="callout note">
+    <h4>A SMALL SAFETY DETAIL</h4>
+    <p>The error report repeats values the uploader typed. A cell starting with <code>=</code>,
+      <code>+</code>, <code>-</code> or <code>@</code> would be run as a formula when the report is opened in
+      a spreadsheet, so such values are written with a leading apostrophe, which makes the spreadsheet
+      treat them as text.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 9 -->
+<section>
+  <h1><span class="num">9</span>Committing to the central repository</h1>
+  <p class="lead">Committing is the moment staging rows become official student records. It is all or
+    nothing, it happens in one database transaction, and it cannot create a second record for anyone.</p>
+
+  <figure>
+    <img src="figures/upload-ready.png" alt="An upload that is ready to commit">
+    <figcaption><b>Figure 8.</b> A file with no errors. The intake table warns that two programmes will be
+      over their approved intake; the file can still be committed, and AICTE will see the excess.</figcaption>
+  </figure>
+
+  <h2>What happens when the admin confirms</h2>
+  <ol>
+    <li><b>Lock the upload.</b> The upload's row is locked so two clicks, or two browser tabs, cannot commit
+      it twice. It must be <span class="tag">validated</span> with zero rows in error.</li>
+    <li><b>Check for duplicates again.</b> Time has passed since validation; another institute may have
+      committed one of the same students in between. One query compares the staging rows with the
+      repository. Any row that now clashes is marked with the usual error, the commit is refused, and the
+      upload page shows those rows like any other failure.</li>
+    <li><b>Copy the rows.</b> A single <code>INSERT ... SELECT</code> moves every staging row into
+      <code>students</code>, converting text to typed columns and attaching the programme.</li>
+    <li><b>Tidy up and record.</b> The staging rows are deleted, the dashboard's summary view is refreshed,
+      the upload becomes <span class="tag">committed</span>, and an audit entry records the number of
+      students added and the file's hash.</li>
+    <li><b>Commit the transaction.</b> Either all of steps 2 to 4 take effect, or none do.</li>
+  </ol>
+
+  <h2>Two institutes, the same student, the same second</h2>
+  <p>Step 2 leaves a tiny window: both institutes could pass the re-check before either has inserted. The
+    unique constraint on <code>students.apaar_id</code> closes it. The database makes the second insert wait
+    for the first transaction to finish and then rejects it. The API turns that rejection into a plain
+    message ("Another upload was committed at the same moment. Try again."), and the retry finds the clash
+    at step 2 and reports the row. No ordering of events produces two records.</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>All or nothing, rather than "commit the good rows".</b> Partial commits sound helpful, but they
+      leave the institute with a file that is half in the system: re-uploading the corrected file would then
+      clash with its own earlier rows. With all-or-nothing the rule is easy to state and to trust: a file is
+      either entirely in the repository or not in it at all.</p>
+  </div>
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Check twice, constrain once.</b> The validation check gives early feedback, the commit re-check
+      gives an accurate message, and the constraint gives the guarantee. Only the constraint is strictly
+      necessary; the two checks exist so that people almost never see a raw database error.</p>
+  </div>
+  <div class="callout note">
+    <h4>LESS DATA KEPT</h4>
+    <p>Deleting staging rows at commit means the repository holds the only copy of each student's details in
+      the database. The upload keeps its counts, so its page still shows what it contained.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 10 -->
+<section>
+  <h1><span class="num">10</span>The APAAR registry adapter</h1>
+  <p class="lead">Stage 3 asks whether an ID is registered with APAAR. The real registry needs government
+    access this project does not have, so the question is asked through an interface with a stand-in behind
+    it.</p>
+
+  <h2>The interface</h2>
+  <p>Everything in the system that needs the registry depends on one small contract and nothing else:</p>
+  <pre>class ApaarClient(Protocol):
+    def lookup_many(self, apaar_ids: Sequence[str]) -> dict[str, ApaarLookup]:
+        """Look up well-formed (12-digit) APAAR IDs. Returns one result per distinct ID."""
+
+# each ApaarLookup carries the ID and a status: FOUND or NOT_FOUND</pre>
+  <p>The pipeline calls <code>lookup_many</code> once per file with every ID that passed the format check.
+    A setting, <code>APAAR_CLIENT</code>, selects which implementation is used. Today there is one,
+    <code>mock</code>. If the registry cannot be reached, the client raises a specific error and the upload
+    is marked <span class="tag">failed</span> with the message "The APAAR service is unavailable. Upload the
+    file again later." rather than reporting thousands of rows as not found.</p>
+
+  <h2>The stand-in</h2>
+  <p>A mock that says yes to everything would never exercise the "not found" path, and one that answers at
+    random would make tests flaky. This one uses a fixed rule: <b>an ID counts as registered when its twelfth
+    digit is the Verhoeff check digit of the first eleven.</b> Verhoeff is a checksum scheme that catches
+    every single-digit typo and every swap of two neighbouring digits, which makes it a convenient way to
+    manufacture IDs that are "registered" or "unknown" on purpose.</p>
+  <table>
+    <tr><th style="width:28%">ID</th><th style="width:26%">The mock says</th><th>Why</th></tr>
+    <tr><td><code>887534778768</code></td><td>found</td><td>The last digit is the correct check digit for the first eleven</td></tr>
+    <tr><td><code>887534778767</code></td><td>not found</td><td>Same first eleven digits, wrong last digit</td></tr>
+  </table>
+
+  <div class="callout note">
+    <h4>A RULE OF THE MOCK, NOT OF APAAR</h4>
+    <p>Nothing here claims real APAAR IDs carry a Verhoeff digit. The rule exists only so that generated
+      test data can contain both kinds of ID. It lives inside the mock class and nowhere else, so replacing
+      the mock removes it completely.</p>
+  </div>
+
+  <h2>Replacing it with the real thing</h2>
+  <ol>
+    <li>Write a class with the same <code>lookup_many</code> method that calls the real service, in batches
+      if the service requires it, and raises the "unavailable" error on timeouts.</li>
+    <li>Add its name to the <code>APAAR_CLIENT</code> setting and to the small function that chooses the
+      implementation.</li>
+    <li>Nothing else changes: not the pipeline, not the error codes, not the tests of the other stages.</li>
+  </ol>
+  <p>A real client would probably return more than found or not found, for example the registered name and
+    date of birth. The natural next check, "does the name in the file match the name in the registry?",
+    would be a sixth stage, added the same way as the others.</p>
+
+  <h2>Generated data</h2>
+  <p>A script produces spreadsheets of invented students (names from the Faker library's Indian locale) with
+    IDs the mock accepts. Given <code>--errors 8</code> it then breaks eight rows, one for each kind of
+    mistake the pipeline should catch: a short ID, an unregistered ID, a missing name, an impossible date,
+    an unknown programme, a repeated ID, an invalid gender. The same seed always produces the same file, so
+    demonstrations and tests are repeatable. No real student data is used anywhere.</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Depend on a contract you own, not on a service you do not.</b> The registry is the one part of the
+      system outside the project's control. Wrapping it in an interface keeps that uncertainty in one file,
+      lets every other part be built and tested today, and turns "integrate with APAAR" from a rewrite into
+      one new class.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 11 -->
+<section>
+  <h1><span class="num">11</span>Approved intake and the AICTE dashboard</h1>
+  <p class="lead">This is the regulator's view: for every programme, how many students are enrolled against
+    how many were approved, with the programmes over their limit at the top.</p>
+
+  <figure>
+    <img src="figures/dashboard.png" alt="The AICTE enrolment dashboard">
+    <figcaption><b>Figure 9.</b> The officer's dashboard. The banner states the headline; the tiles give the
+      totals; each row shows a programme's enrolment as a share of its intake. Rows named "E2E Institute"
+      were created by the automated end-to-end test.</figcaption>
+  </figure>
+
+  <h2>Reading it</h2>
+  <ul>
+    <li><b>The bar</b> is enrolment as a share of approved intake. It is blue while within the intake and
+      red once over it. The status column says the same thing in words ("7 over intake"), so the meaning
+      never depends on colour alone.</li>
+    <li><b>Order matters:</b> programmes furthest over their intake come first, then the fullest ones. An
+      officer with a minute to spare sees the worst cases without scrolling or filtering.</li>
+    <li><b>Filters:</b> the academic year, and "only programmes over intake". Institute names link to the
+      institute's page, where the intake can be corrected if it was entered wrongly.</li>
+  </ul>
+
+  <h2>Where the numbers come from</h2>
+  <p>Counting students for every programme on each page load would get slower as the repository grows. The
+    dashboard instead reads a <b>materialised view</b>: a query whose result PostgreSQL stores like a table.</p>
+  <pre>CREATE MATERIALIZED VIEW programme_enrolment AS
+SELECT pi.programme_id, pi.academic_year, p.institute_id, pi.approved_intake,
+       count(s.id) AS enrolled
+FROM programme_intakes pi
+JOIN programmes p ON p.id = pi.programme_id
+LEFT JOIN students s ON s.programme_id = pi.programme_id AND s.academic_year = pi.academic_year
+GROUP BY pi.programme_id, pi.academic_year, p.institute_id, pi.approved_intake</pre>
+  <p>A stored result is only as fresh as its last refresh. Only two actions can change these numbers,
+    committing an upload and setting an intake, and each refreshes the view <i>inside its own transaction</i>.
+    The dashboard is therefore never behind the data. The refresh uses PostgreSQL's
+    <code>CONCURRENTLY</code> option, so people reading the dashboard are not blocked while it rebuilds.</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Flag, do not reject.</b> It would be easy to refuse the 61st student in a programme approved for
+      60. But the 61st student exists; refusing the row only hides them from AICTE, which is the very
+      problem the platform was asked to solve. So the data is accepted, the institute is warned before it
+      commits, and the regulator sees the excess and decides what to do about it.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 12 -->
+<section>
+  <h1><span class="num">12</span>Verification with the student's consent</h1>
+  <p class="lead">An employer or university wants to know one thing: is this person really enrolled where
+    they say? The system answers that for one student at a time, and only when the student has handed over
+    the means to ask.</p>
+
+  <div class="flow">
+    <div class="step"><b>1 Student asks</b>The student asks their institute for a verification link</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>2 Institute issues</b>The admin creates a link with an expiry. It is shown once, as a link and a QR code</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>3 Student shares</b>The student gives the QR code to whoever they choose</div><div class="arrow">&rarr;</div>
+    <div class="step"><b>4 Verifier scans</b>An authorised verifier opens the link and signs in</div><div class="arrow">&rarr;</div>
+    <div class="step end"><b>5 Record shown</b>A minimal record, and an audit entry for the lookup</div>
+  </div>
+  <p class="sans small muted" style="margin-top:4pt"><b style="color:var(--ink)">Figure 10.</b> The
+    verification flow. Possessing the link is what proves the student agreed.</p>
+
+  <figure>
+    <img src="figures/students-qr.png" alt="Creating a verification link and QR code">
+    <figcaption><b>Figure 11.</b> The institute admin creates a link for one student. Below it, every link
+      ever issued for that student with its expiry, state and number of lookups, and a button to revoke.
+      (The link shown here was revoked after the screenshot was taken.)</figcaption>
+  </figure>
+
+  <h2>Two locks, both required</h2>
+  <p>A lookup needs <b>the link</b>, which only the student can hand out, <i>and</i> <b>a verifier
+    account</b>, which only an AICTE officer can create. A leaked link is useless to someone who is not an
+    authorised verifier. A verifier without a link can look up nobody: there is no search box, no list, no
+    way to guess. Institutes cannot use the verification endpoint at all.</p>
+
+  <h2>What the link really is</h2>
+  <p>The link looks like <code>https://host/verify#dWrb9Ojd...</code>. The part after <code>#</code> is a
+    random token of 43 characters, generated by the operating system's secure random source. Three details
+    of how it is handled matter:</p>
+  <ul>
+    <li><b>Only a fingerprint is stored.</b> The database keeps the token's SHA-256 hash, not the token. A
+      copy of the database cannot be used to verify anyone, and even the institute cannot display a link
+      again after creating it.</li>
+    <li><b>It rides in the URL's fragment.</b> Browsers never send the part after <code>#</code> to a server,
+      so the token does not appear in server access logs or in the address a browser reports to other
+      sites. The page reads it in the browser and sends it to the API in the body of a request.</li>
+    <li><b>It survives sign-in.</b> A verifier who scans the code while signed out is sent to the sign-in
+      page and, after signing in, straight on to the result. The token is carried across that detour.</li>
+  </ul>
+</section>
+
+<!-- ===================================================================== 12b -->
+<section>
+  <h1><span class="num">12</span>Verification <span class="muted" style="font-weight:400;font-size:13pt">(what the verifier sees)</span></h1>
+
+  <figure>
+    <img src="figures/verified.png" alt="A verified student record">
+    <figcaption><b>Figure 12.</b> The verifier's result. Enough to confirm enrolment and no more: no date of
+      birth, no gender, and only the last four digits of the APAAR ID.</figcaption>
+  </figure>
+
+  <h2>What is returned, and what is not</h2>
+  <table>
+    <tr><th style="width:50%">Returned</th><th>Deliberately left out</th></tr>
+    <tr><td>Full name; institute name, AICTE ID and state; programme; academic year of admission; enrolment
+      number; the <b>last four</b> digits of the APAAR ID; the institute's current status with AICTE</td>
+      <td>Date of birth, gender, the full APAAR ID, any other student, any history of who else has looked</td></tr>
+  </table>
+  <p>If the institute has been suspended or rejected since the student enrolled, the result says so. A
+    record at a suspended institute is still a real record, but the verifier should know.</p>
+
+  <h2>When a link does not work</h2>
+  <p>An unknown token, an expired link and a revoked link all produce the same reply: "This verification
+    link is invalid, expired or revoked". A verifier, or anyone trying tokens at random, learns nothing
+    about which tokens exist. With 256 bits of randomness, guessing one is not a practical attack in the
+    first place.</p>
+
+  <h2>Control stays with the student and institute</h2>
+  <ul>
+    <li><b>Expiry.</b> Every link expires: 7, 30 or 90 days in the interface, anything from 1 to 365 through
+      the API.</li>
+    <li><b>Revocation.</b> The institute can revoke a link at any time, and it stops working immediately.</li>
+    <li><b>Visibility.</b> The institute sees how many times each link has been used and when it was last used.</li>
+  </ul>
+
+  <h2>Every lookup is recorded</h2>
+  <p>A successful lookup writes an audit entry naming the verifier, their organisation and the student, in
+    the same transaction that returns the record. A <i>refused</i> lookup is recorded too, with the reason.
+    The verifier is told on screen that the lookup has been logged. The endpoint is a POST request, not a
+    GET, for the same reason: each call is an event with a side effect, and it should never be repeated by
+    a browser refreshing in the background. The web page makes exactly one call per visit.</p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>Consent as possession of a link.</b> The ideal is a student signing in and approving each request,
+      as DigiLocker does. That needs student accounts and identity proofing, which is a project of its own.
+      A link the student physically hands over captures the essential property, nobody is verified unless
+      they chose to be, at a fraction of the complexity. The honest limitation is that the institute creates
+      the link on the student's word.</p>
+  </div>
+  <div class="callout note">
+    <h4>AUTHORISING VERIFIERS</h4>
+    <p>An officer creates each verifier account with a name, organisation, email and initial password. The
+      verifier should change that password on first use (section 5). The organisation name is what appears
+      in the audit log next to each lookup.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 13 -->
+<section>
+  <h1><span class="num">13</span>The audit trail</h1>
+  <p class="lead">A regulator's data is only as trustworthy as its history. Every significant action is
+    written to a log that cannot be edited through the application, and in which tampering by any other
+    route can be detected.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 132" role="img" aria-label="Hash chain">
+      <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0 0L10 5L0 10z" fill="#1f4fd8"/></marker></defs>
+      <g><rect class="box" x="10" y="12" width="196" height="108" rx="5"/><rect class="boxh" x="10" y="12" width="196" height="21" rx="5"/><rect class="boxh" x="10" y="23" width="196" height="10"/>
+        <text class="tw" x="20" y="27">entry 166</text>
+        <text class="tm" x="20" y="52">prev_hash  e9967418…</text>
+        <text class="tm" x="20" y="70">upload.committed</text><text class="tm" x="20" y="84">by institute_admin, 9:10 pm</text>
+        <rect x="16" y="94" width="184" height="19" rx="3" fill="#eef3ff"/><text class="tm" x="20" y="107">hash       b5116748…</text></g>
+      <g><rect class="box" x="252" y="12" width="196" height="108" rx="5"/><rect class="boxh" x="252" y="12" width="196" height="21" rx="5"/><rect class="boxh" x="252" y="23" width="196" height="10"/>
+        <text class="tw" x="262" y="27">entry 167</text>
+        <rect x="258" y="39" width="184" height="19" rx="3" fill="#eef3ff"/><text class="tm" x="262" y="52">prev_hash  b5116748…</text>
+        <text class="tm" x="262" y="70">verification.link_created</text><text class="tm" x="262" y="84">by institute_admin, 9:10 pm</text>
+        <rect x="258" y="94" width="184" height="19" rx="3" fill="#eef3ff"/><text class="tm" x="262" y="107">hash       ad4c4745…</text></g>
+      <g><rect class="box" x="494" y="12" width="196" height="108" rx="5"/><rect class="boxh" x="494" y="12" width="196" height="21" rx="5"/><rect class="boxh" x="494" y="23" width="196" height="10"/>
+        <text class="tw" x="504" y="27">entry 168</text>
+        <rect x="500" y="39" width="184" height="19" rx="3" fill="#eef3ff"/><text class="tm" x="504" y="52">prev_hash  ad4c4745…</text>
+        <text class="tm" x="504" y="70">auth.login</text><text class="tm" x="504" y="84">by verifier, 9:10 pm</text>
+        <text class="tm" x="504" y="107">hash       89fb667c…</text></g>
+      <path d="M200 103C232 103 226 49 256 49" stroke="#1f4fd8" stroke-width="1.3" fill="none" marker-end="url(#ah2)"/>
+      <path d="M442 103C474 103 468 49 498 49" stroke="#1f4fd8" stroke-width="1.3" fill="none" marker-end="url(#ah2)"/>
+    </svg>
+    <figcaption><b>Figure 13.</b> Each entry stores the hash of the one before it. Its own hash is computed
+      from that value together with all of its own fields. (Hash values shortened and illustrative.)</figcaption>
+  </figure>
+
+  <h2>How the chain makes tampering visible</h2>
+  <p>An entry's hash is the SHA-256 of a fixed, sorted text form of: the previous entry's hash, the time,
+    who acted and in what role, the action, what it was done to, the institute concerned, and the details.
+    Change any of those in an old entry and its hash no longer matches. "Fix" its hash and the next entry's
+    <code>prev_hash</code> no longer matches. Delete an entry and the chain has a gap. To hide a change,
+    every later entry would have to be recomputed, and a single remembered hash from outside the database
+    would expose even that.</p>
+  <p>The officer's audit page recomputes the whole chain on request and reports either "Chain intact" or the
+    first entry that does not fit, with the reason: it does not link to the previous entry, or its contents
+    do not match its stored hash.</p>
+
+  <h2>Three layers of protection</h2>
+  <table>
+    <tr><th style="width:24%">Layer</th><th>What it stops</th></tr>
+    <tr><td><strong>No API for changes</strong></td><td>The application has endpoints to read the log and none
+      to edit it. Entries are only ever created as a side effect of the action they describe.</td></tr>
+    <tr><td><strong>Database triggers</strong></td><td>UPDATE, DELETE and TRUNCATE on the table raise an
+      error. A bug or a careless script cannot alter history.</td></tr>
+    <tr><td><strong>The hash chain</strong></td><td>Someone with enough database access to switch the triggers
+      off can still change rows, but not without the verification reporting it.</td></tr>
+  </table>
+
+  <h2>Written together with the action</h2>
+  <p>An audit entry is inserted in the same database transaction as the change it describes. If the change
+    fails, there is no entry; if the entry cannot be written, the change does not happen. There is no way
+    to have an action without its record. To keep the chain a single line, writers take a database lock for
+    the instant between reading the last hash and adding their entry.</p>
+  <p class="sans small"><b>Actions recorded:</b>
+    <span class="tag">auth.login</span> <span class="tag">auth.locked</span> <span class="tag">auth.password_changed</span>
+    <span class="tag">institute.registered</span> <span class="tag">institute.status_changed</span>
+    <span class="tag">programme.created</span> <span class="tag">programme.intake_set</span>
+    <span class="tag">upload.created</span> <span class="tag">upload.validated</span> <span class="tag">upload.failed</span>
+    <span class="tag">upload.committed</span> <span class="tag">verification.link_created</span>
+    <span class="tag">verification.link_revoked</span> <span class="tag">verification.lookup</span>
+    <span class="tag">verification.lookup_refused</span> <span class="tag">verifier.created</span></p>
+
+  <div class="callout">
+    <h4>WHY IT IS BUILT THIS WAY</h4>
+    <p><b>One entry per file, not per student.</b> A 10,000-row commit writes one audit entry carrying the
+      count and the file's hash, not 10,000 entries. The file hash ties the entry to the exact bytes
+      uploaded, so the log stays small and still proves what was committed.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 14 -->
+<section>
+  <h1><span class="num">14</span>Security in one place</h1>
+  <p class="lead">The protections described across the guide, gathered by the threat each one answers. The
+    system is sized for a small deployment of tens of users, and the last table says plainly what it does
+    not defend against.</p>
+
+  <table>
+    <tr><th style="width:25%">Threat</th><th>Protection</th><th style="width:12%">Section</th></tr>
+    <tr><td>Stolen password database</td><td>Passwords are stored only as Argon2 hashes, which are slow to
+      guess even offline</td><td>5</td></tr>
+    <tr><td>Password guessing</td><td>Five wrong attempts lock the account for 15 minutes; a minimum length
+      of 10 characters</td><td>5</td></tr>
+    <tr><td>Stolen session by a script on the page</td><td>The session cookie is <code>HttpOnly</code>; page
+      scripts cannot read it</td><td>5</td></tr>
+    <tr><td>Another website acting as the signed-in user</td><td>The cookie is <code>SameSite=Lax</code>, and
+      every request that changes anything must carry an <code>X-Requested-With</code> header. Another site
+      can make a browser send a cookie but cannot add a custom header</td><td>5</td></tr>
+    <tr><td>Forged session tokens</td><td>Tokens are signed; the API will not start with a signing secret
+      shorter than 32 characters</td><td>5</td></tr>
+    <tr><td>One institute reading another's data</td><td>Every query for uploads, students and links is
+      filtered by the caller's institute; other institutes' records answer "not found"</td><td>5</td></tr>
+    <tr><td>An institute raising its own limits</td><td>Only officers can create programmes or set intake</td><td>6</td></tr>
+    <tr><td>Duplicate or fabricated enrolment</td><td>Registry check, duplicate checks, and a unique
+      constraint that holds under simultaneous commits</td><td>8, 9</td></tr>
+    <tr><td>Bulk harvesting of student data by a verifier</td><td>No search or listing for verifiers; one
+      token gives one minimal record; tokens are unguessable</td><td>12</td></tr>
+    <tr><td>A leaked database exposing verification links</td><td>Only token hashes are stored</td><td>12</td></tr>
+    <tr><td>Tokens leaking through logs</td><td>The token travels in the URL fragment and a request body,
+      never in a path or query string</td><td>12</td></tr>
+    <tr><td>Quietly rewriting history</td><td>Append-only triggers and the hash chain</td><td>13</td></tr>
+    <tr><td>Malicious spreadsheet content</td><td>Size and row limits; values are never executed; the error
+      report neutralises formula cells; filenames never reach a storage path</td><td>7, 8</td></tr>
+    <tr><td>SQL injection</td><td>All queries pass values as parameters; no query text is built from user input</td><td>&ndash;</td></tr>
+    <tr><td>The app shown inside another site's frame</td><td>Response headers forbid framing, disable
+      content-type guessing and send no referrer</td><td>&ndash;</td></tr>
+    <tr><td>One user's data lingering for the next on a shared computer</td><td>Sign-in and sign-out are full
+      page loads that discard everything held in memory</td><td>5</td></tr>
+  </table>
+
+  <h2>What it does not defend against</h2>
+  <table>
+    <tr><th style="width:36%">Gap</th><th>What that means, and what a real deployment would do</th></tr>
+    <tr><td>Personal data is not encrypted column by column</td><td>Names and dates of birth are plain columns,
+      and the original files are kept. Use encryption at rest in the database and object store.</td></tr>
+    <tr><td>The lockout can be used against a user</td><td>Anyone who knows an email can lock that account for
+      15 minutes by guessing wrong five times. Larger systems limit by network address as well.</td></tr>
+    <tr><td>The registration form is open</td><td>It can be spammed with fake institutes. They stay pending,
+      but an officer has to reject them. A real system would add rate limiting or a CAPTCHA.</td></tr>
+    <tr><td>Tokens cannot be cancelled early</td><td>Changing a password does not sign out other sessions;
+      they end when the eight-hour token expires.</td></tr>
+    <tr><td>No forgotten-password flow</td><td>There is no email sending, so a lost password needs an officer
+      or a database change.</td></tr>
+    <tr><td>Development defaults</td><td>The supplied Docker setup uses default database and object-store
+      credentials and no HTTPS. It is for a laptop, not the internet.</td></tr>
+  </table>
+</section>
+
+<!-- ===================================================================== 15 -->
+<section>
+  <h1><span class="num">15</span>Testing and performance</h1>
+  <p class="lead">Two layers of automated tests: 67 that exercise the API directly, and an end-to-end run
+    that drives the real interface in a browser. Plus measurements against the targets set at the start.</p>
+
+  <h2>API tests</h2>
+  <table>
+    <tr><th style="width:23%">Area</th><th style="width:9%">Tests</th><th>Examples of what is proved</th></tr>
+    <tr><td>Uploads and commit</td><td>16</td><td>Every error code lands on the right row; two institutes
+      racing for one student yields one record; excess intake is flagged but accepted; 10,000 rows in time</td></tr>
+    <tr><td>File parsing</td><td>12</td><td>Loose headers, Excel numbers and dates, blank rows, non-UTF-8 and
+      corrupt files each give the intended result</td></tr>
+    <tr><td>Sign-in and roles</td><td>7</td><td>Cookie and bearer token both work; wrong password and unknown
+      email are indistinguishable; deactivated users lose access</td></tr>
+    <tr><td>Verification</td><td>7</td><td>Minimal record; under 500 ms; unknown, expired and revoked links
+      refused identically; only the hash is stored</td></tr>
+    <tr><td>Audit trail</td><td>7</td><td>The database refuses UPDATE, DELETE and TRUNCATE; edits and deletions
+      made behind the triggers are detected at the right entry</td></tr>
+    <tr><td>Hardening</td><td>6</td><td>Lockout; requests without the custom header are refused; password change</td></tr>
+    <tr><td>Onboarding</td><td>5</td><td>Pending institutes cannot upload; institutes cannot change intake</td></tr>
+    <tr><td>Dashboard</td><td>4</td><td>Every over-intake programme is flagged; raising the intake clears it</td></tr>
+    <tr><td>APAAR mock</td><td>3</td><td>The checksum against a published example</td></tr>
+  </table>
+  <p>The tests use a <b>real PostgreSQL database</b>, rebuilt from the migrations for each run, because the
+    guarantees under test (constraints, triggers, locks) are the database's own and a substitute would not
+    have them. Only two things are replaced: the object store by an in-memory one, and the queue by calling
+    the pipeline directly.</p>
+
+  <h2>The end-to-end test</h2>
+  <p>One Playwright test performs the whole demonstration in a real browser: an institute registers and is
+    seen to be blocked; an officer approves it and sets an intake of 3; a file with errors shows its report;
+    the corrected file of 4 is committed and flagged as 1 over intake; another institute is refused the same
+    student; a verification link is created; the dashboard shows the flag; an officer authorises a verifier;
+    the verifier opens the link signed out, signs in and sees the record; the verifier changes their
+    password; and the audit chain is confirmed intact. If any screen, endpoint or rule in that path breaks,
+    this test fails.</p>
+
+  <h2>Measured against the targets</h2>
+  <table>
+    <tr><th style="width:44%">Target</th><th>Measured</th></tr>
+    <tr><td>10,000 rows validated in under 60 seconds</td><td>About 7 seconds, in the test suite on a laptop</td></tr>
+    <tr><td>Load test with 100,000 rows</td><td>About 100 seconds through the real queue, on the same laptop
+      while other work was running</td></tr>
+    <tr><td>Every cross-institute duplicate rejected or flagged</td><td>Proved by tests at validation, at
+      commit, and under a simulated race</td></tr>
+    <tr><td>Every programme over its intake flagged</td><td>Proved by test; the view is refreshed with each change</td></tr>
+    <tr><td>Verification answers in under 500 ms, every lookup logged</td><td>Asserted in a test, including
+      the audit entry</td></tr>
+  </table>
+
+  <div class="callout">
+    <h4>A WORKED EXAMPLE OF TUNING</h4>
+    <p>The first 100,000-row run took 131 seconds. Rather than guess, each stage was timed. Three places
+      stood out, and each got a targeted change: writing results (45 s to 19 s, by switching from INSERT to
+      PostgreSQL's COPY), the duplicate queries (16 s to 6 s, by sending IDs as one array instead of
+      thousands of separate parameters), and date parsing (10 s to 5 s, by replacing a general-purpose date
+      parser with two patterns). The lesson is the method: measure first, then change only what the
+      measurement points at.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 16 -->
+<section>
+  <h1><span class="num">16</span>Running it and finding your way around</h1>
+  <p class="lead">Everything runs on one machine with Docker for the services and Node for the web app.</p>
+
+  <h2>Starting the system</h2>
+  <pre>cp .env.example .env              # then set JWT_SECRET, e.g. with: openssl rand -hex 32
+docker compose up -d              # PostgreSQL, Redis, MinIO, the API on :8000, the worker
+docker compose exec api python -m app.seed
+
+cd web &amp;&amp; pnpm install &amp;&amp; pnpm dev    # the web app on http://localhost:3000</pre>
+  <p>The seed creates one account of each kind, all with the password set as <code>SEED_PASSWORD</code> in
+    <code>.env</code>:</p>
+  <table>
+    <tr><th style="width:36%">Account</th><th>What it is</th></tr>
+    <tr><td><code>officer@aicte.example</code></td><td>AICTE officer</td></tr>
+    <tr><td><code>admin@sahyadri.example</code></td><td>Admin of Sahyadri Institute of Technology (CSE 120, ECE 60, ME 60)</td></tr>
+    <tr><td><code>admin@kaveri.example</code></td><td>Admin of Kaveri College of Engineering (CSE 60, MBA 60)</td></tr>
+    <tr><td><code>verifier@employer.example</code></td><td>Verifier</td></tr>
+  </table>
+
+  <h2>A ten-minute tour</h2>
+  <ol>
+    <li>Run <code>./scripts/reset-demo.sh</code>. It asks first, then wipes local data, seeds the accounts
+      and writes two files to <code>api/data/</code>.</li>
+    <li>As the Sahyadri admin, upload <code>demo-with-errors.csv</code> and read the report (section 8).</li>
+    <li>Upload <code>demo-clean.csv</code>, note the intake warning, and commit (section 9).</li>
+    <li>As the Kaveri admin, upload the same clean file. Every row is refused: those students are enrolled
+      elsewhere.</li>
+    <li>As the officer, open the dashboard: ECE and ME at Sahyadri are flagged (section 11).</li>
+    <li>As the Sahyadri admin, open Students, create a verification link and copy it. Open it in a private
+      window and sign in as the verifier (section 12).</li>
+    <li>As the officer, open the audit log, find the lookup, and verify the chain (section 13).</li>
+  </ol>
+
+  <h2>Where things are</h2>
+  <table>
+    <tr><th style="width:40%">Path</th><th>What is there</th></tr>
+    <tr><td><code>api/app/routers/</code></td><td>One file per group of endpoints: auth, institutes, uploads,
+      students, verification, dashboard, audit</td></tr>
+    <tr><td><code>api/app/pipeline/</code></td><td><code>parser.py</code> (file to rows), <code>stages.py</code>
+      (the five stages), <code>runner.py</code> (runs them for one upload), <code>commit.py</code></td></tr>
+    <tr><td><code>api/app/audit.py</code>, <code>apaar.py</code>, <code>enrolment.py</code></td>
+      <td>The hash chain; the registry interface and mock; the dashboard view's refresh</td></tr>
+    <tr><td><code>api/app/models.py</code>, <code>api/migrations/</code></td><td>The tables as Python
+      classes, and the migrations that create them</td></tr>
+    <tr><td><code>api/tests/</code></td><td>The 67 API tests, one file per area</td></tr>
+    <tr><td><code>web/src/app/</code></td><td>The pages: home, login, register, and the signed-in area in
+      <code>(app)/</code> with one folder per page</td></tr>
+    <tr><td><code>web/src/lib/</code></td><td>The API client and types, the per-role navigation, the session</td></tr>
+    <tr><td><code>web/e2e/</code></td><td>The Playwright end-to-end test</td></tr>
+    <tr><td><code>docker-compose.yml</code>, <code>.env.example</code></td><td>The services and their settings</td></tr>
+  </table>
+
+  <div class="callout note">
+    <h4>USEFUL ADDRESSES WHILE IT RUNS</h4>
+    <p><code>http://localhost:3000</code> is the application. <code>http://localhost:8000/docs</code> is an
+      interactive list of every API endpoint, generated from the code, where requests can be tried by hand.
+      <code>http://localhost:9001</code> is the object store's console, where the uploaded files can be seen.</p>
+  </div>
+  <div class="callout note">
+    <h4>RUNNING THE TESTS</h4>
+    <p><code>docker compose run --rm --no-deps api pytest</code> runs the API tests in a separate test
+      database. <code>pnpm exec playwright test</code> inside <code>web/</code> runs the end-to-end test
+      against the running system, using the Chrome installed on the machine.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== 17 -->
+<section>
+  <h1><span class="num">17</span>Limits, next steps and glossary</h1>
+
+  <h2>What the system does not do</h2>
+  <ul>
+    <li><b>Talk to the real APAAR registry,</b> the Academic Bank of Credits or DigiLocker. The registry is
+      mocked behind an interface (section 10).</li>
+    <li><b>Let students give consent themselves.</b> The institute issues the link on the student's word
+      (section 12).</li>
+    <li><b>Handle transfers.</b> A student moving to another institute currently looks like a duplicate.
+      A real system needs a release-and-admit process between the two institutes.</li>
+    <li><b>Update or withdraw a record.</b> Records are created by commit and never edited. Corrections,
+      withdrawals and year-on-year progression are not modelled.</li>
+    <li><b>Cover fees, admissions or examinations,</b> or provide a mobile app.</li>
+    <li><b>Run in production as supplied.</b> See the gaps listed in section 14.</li>
+  </ul>
+
+  <h2>Good next things to build, in rising order of difficulty</h2>
+  <ol>
+    <li><b>A sixth validation stage</b> comparing the name in the file with the name the registry returns.
+      Small, and it exercises the whole pipeline pattern.</li>
+    <li><b>Year-on-year trends</b> on the dashboard, from data the view already has.</li>
+    <li><b>Record corrections</b> with an audit entry showing the old and new values.</li>
+    <li><b>A transfer workflow:</b> the releasing institute approves, the receiving institute admits, and
+      the unique constraint is satisfied throughout.</li>
+    <li><b>Student-granted consent:</b> student accounts, a request from the verifier, and approval by the
+      student, replacing institute-issued links.</li>
+  </ol>
+
+  <h2>Glossary</h2>
+  <table>
+    <tr><th style="width:24%">Term</th><th>Meaning here</th></tr>
+    <tr><td><strong>APAAR ID</strong></td><td>A 12-digit identifier that stays with a student across institutions
+      (Automated Permanent Academic Account Registry)</td></tr>
+    <tr><td><strong>AICTE</strong></td><td>The All India Council for Technical Education, the regulator that
+      approves institutes and their intake</td></tr>
+    <tr><td><strong>Approved intake</strong></td><td>The number of students AICTE has sanctioned for one
+      programme in one academic year</td></tr>
+    <tr><td><strong>Academic year</strong></td><td>Written <code>2026-27</code>; taken to start in July</td></tr>
+    <tr><td><strong>Central repository</strong></td><td>The <code>students</code> table: one record per APAAR ID</td></tr>
+    <tr><td><strong>Staging</strong></td><td>Where uploaded rows wait, with their errors, until committed</td></tr>
+    <tr><td><strong>Commit</strong></td><td>Moving a fully valid upload from staging into the repository</td></tr>
+    <tr><td><strong>Queue and worker</strong></td><td>A list of jobs to do later, and the program that does them</td></tr>
+    <tr><td><strong>Transaction</strong></td><td>A group of database changes that either all happen or none do</td></tr>
+    <tr><td><strong>Unique constraint</strong></td><td>A database rule that no two rows may share a value</td></tr>
+    <tr><td><strong>Materialised view</strong></td><td>A query whose result is stored and refreshed on demand</td></tr>
+    <tr><td><strong>Hash</strong></td><td>A short fingerprint of some data; any change to the data changes it
+      (SHA-256 here)</td></tr>
+    <tr><td><strong>Hash chain</strong></td><td>A list in which each item includes the hash of the one before</td></tr>
+    <tr><td><strong>Adapter</strong></td><td>A thin layer that hides an outside service behind an interface the
+      project controls</td></tr>
+    <tr><td><strong>Token</strong></td><td>A hard-to-guess string that proves something: here, a session or a
+      student's consent</td></tr>
+    <tr><td><strong>CSRF</strong></td><td>Cross-site request forgery: another site causing your browser to act
+      on this one while you are signed in</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

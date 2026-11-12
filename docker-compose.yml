@@ -1,0 +1,74 @@
+name: acadledger
+
+x-api: &api
+  build: ./api
+  env_file: .env
+  volumes:
+    - ./api:/app
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    minio:
+      condition: service_started
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: acadledger
+      POSTGRES_PASSWORD: acadledger
+      POSTGRES_DB: acadledger
+    ports:
+      # 5433 on the host so it does not collide with a local Postgres on 5432
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acadledger -d acadledger"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    # MinIO no longer publishes minio/minio on Docker Hub; Chainguard builds the same server.
+    image: cgr.dev/chainguard/minio:latest
+    command: server /data --console-address ":9001"
+    # The image runs as a non-root user, which cannot write to a fresh named volume.
+    user: root
+    environment:
+      MINIO_ROOT_USER: acadledger
+      MINIO_ROOT_PASSWORD: acadledger-minio
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - miniodata:/data
+
+  api:
+    <<: *api
+    # Keep idle connections open longer than the web app's proxy does (uvicorn's default
+    # is 5 s). Otherwise the proxy can reuse a connection the API has just closed and the
+    # request fails with "socket hang up".
+    command: >
+      sh -c "alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --timeout-keep-alive 75"
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  worker:
+    <<: *api
+    command: celery -A app.worker worker --loglevel=info --concurrency=2
+
+volumes:
+  pgdata:
+  miniodata:
